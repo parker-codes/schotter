@@ -1,7 +1,7 @@
 use nannou::prelude::*;
 use nannou::rand::rngs::StdRng;
 use nannou::rand::{Rng, SeedableRng};
-use nannou_egui::egui::Area;
+use nannou_egui::egui::{Area, Slider};
 use nannou_egui::Egui;
 
 const ROWS: u32 = 22;
@@ -29,7 +29,6 @@ struct Model {
     gravel: Vec<Stone>,
 
     controls_ui: Egui,
-    // controls_ui_app: WrapAp,
 }
 
 fn model(app: &App) -> Model {
@@ -57,7 +56,7 @@ fn model(app: &App) -> Model {
 
     let controls_window_id = app
         .new_window()
-        .title(app.exe_name().unwrap() + " controls")
+        .title(app.exe_name().unwrap() + " Control Panel")
         .size(300, 200)
         .view(controls_view)
         .raw_event(raw_controls_event)
@@ -208,12 +207,24 @@ fn raw_controls_event(_app: &App, model: &mut Model, event: &nannou::winit::even
 }
 
 fn update_controls_ui(app: &App, model: &mut Model, update: Update) {
-    let controls_ui = &mut model.controls_ui;
-    controls_ui.set_elapsed_time(update.since_start);
+    let ui = &mut model.controls_ui;
+    ui.set_elapsed_time(update.since_start);
     let proxy = app.create_proxy();
 
-    controls_ui.do_frame_with_epi_frame(proxy, |ctx, _frame| {
+    ui.do_frame_with_epi_frame(proxy, |ctx, _frame| {
         Area::new("controls").show(&ctx, |ui| {
+            ui.add(
+                Slider::new(&mut model.displacement, (0.0)..=(5.0))
+                    .smart_aim(true)
+                    .text("Displacement"),
+            );
+
+            ui.add(
+                Slider::new(&mut model.rotation, (0.0)..=(5.0))
+                    .smart_aim(true)
+                    .text("Rotation"),
+            );
+
             if ui.button("Randomize").clicked() {
                 model.random_seed = random_range(0, 1_000_000);
             }
