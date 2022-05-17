@@ -1,7 +1,7 @@
 use nannou::prelude::*;
 use nannou::rand::rngs::StdRng;
 use nannou::rand::{Rng, SeedableRng};
-use nannou_egui::egui::{Area, Slider};
+use nannou_egui::egui::{Area, Slider, TextEdit};
 use nannou_egui::Egui;
 
 const ROWS: u32 = 22;
@@ -225,9 +225,25 @@ fn update_controls_ui(app: &App, model: &mut Model, update: Update) {
                     .text("Rotation"),
             );
 
-            if ui.button("Randomize").clicked() {
-                model.random_seed = random_range(0, 1_000_000);
-            }
+            ui.horizontal(|ui| {
+                ui.label("Seed");
+
+                let mut seed_string = model.random_seed.to_string();
+                let seed_string_input = ui.add(
+                    TextEdit::singleline(&mut seed_string)
+                        .desired_width(100.0)
+                        .cursor_at_end(true),
+                );
+                if seed_string_input.changed() {
+                    if let Ok(seed) = seed_string.parse::<u64>() {
+                        model.random_seed = seed;
+                    }
+                }
+
+                if ui.button("Randomize").clicked() {
+                    model.random_seed = random_range(0, 1_000_000);
+                }
+            });
         });
     });
 }
