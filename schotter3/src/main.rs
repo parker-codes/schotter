@@ -223,9 +223,17 @@ fn update_controls_ui(app: &App, model: &mut Model, update: Update) {
 
     ui.do_frame_with_epi_frame(proxy, |ctx, _frame| {
         Area::new("controls").show(&ctx, |ui| {
-            ui.add(Slider::new(&mut model.displacement, (0.0)..=(5.0)).text("Displacement"));
+            ui.horizontal(|ui| {
+                ui.label("Displacement");
 
-            ui.add(Slider::new(&mut model.rotation, (0.0)..=(5.0)).text("Rotation"));
+                ui.add(Slider::new(&mut model.displacement, (0.0)..=(5.0)));
+            });
+
+            ui.horizontal(|ui| {
+                ui.label("Rotation");
+
+                ui.add(Slider::new(&mut model.rotation, (0.0)..=(5.0)));
+            });
 
             ui.horizontal(|ui| {
                 ui.label("Seed");
