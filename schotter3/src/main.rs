@@ -25,7 +25,7 @@ struct Model {
     random_seed: u64,
     displacement: f32,
     rotation: f32,
-    color: Rgb<f32>,
+    color: f32,
     gravel: Vec<Stone>,
 
     controls_ui: Egui,
@@ -44,7 +44,7 @@ fn model(app: &App) -> Model {
     let random_seed = gen_random_seed();
     let displacement = 1.0;
     let rotation = 1.0;
-    let color = Rgb::new(0.0, 0.0, 0.0);
+    let color = 0.0;
 
     let mut gravel = Vec::new();
     for y in 0..ROWS {
@@ -98,7 +98,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
         cdraw
             .rect()
             .no_fill()
-            .stroke(model.color)
+            .stroke(stone.color)
             .stroke_weight(LINE_WIDTH)
             .w_h(1.0, 1.0)
             .x_y(stone.x_offset, stone.y_offset)
@@ -118,10 +118,16 @@ fn update(app: &App, model: &mut Model, update: Update) {
 
         let displacement_factor = factor * model.displacement;
         let rotation_factor = factor * model.rotation;
+        let color_factor = model.color / 3.0;
 
         stone.x_offset = displacement_factor * rng.gen_range(-0.5..0.5);
         stone.y_offset = displacement_factor * rng.gen_range(-0.5..0.5);
         stone.rotation = rotation_factor * rng.gen_range(-PI / 4.0..PI / 4.0);
+
+        let r = color_factor * rng.gen_range(0.0..255.0) / 255.0;
+        let g = color_factor * rng.gen_range(0.0..255.0) / 255.0;
+        let b = color_factor * rng.gen_range(0.0..255.0) / 255.0;
+        stone.color = Rgb::new(r, g, b);
     }
 }
 
@@ -137,15 +143,22 @@ fn key_pressed(app: &App, model: &mut Model, key: Key) {
                     random_seed,
                     displacement,
                     rotation,
+                    color,
                     ..
                 } = model;
-                let image_path =
-                    format!("snapshots/{app_name}-s{random_seed}-d{displacement}-r{rotation}.png");
+                let image_path = format!(
+                    "snapshots/{app_name}-s{random_seed}-d{displacement}-r{rotation}-c{color}.png"
+                );
                 window.capture_frame(image_path);
             }
         }
-        Key::C => {
-            model.color = gen_random_color();
+        Key::L => {
+            model.color += 0.1;
+        }
+        Key::D => {
+            if model.color > 0.0 {
+                model.color -= 0.1;
+            }
         }
         Key::Up => {
             model.displacement += 0.1;
@@ -173,6 +186,7 @@ struct Stone {
     x_offset: f32,
     y_offset: f32,
     rotation: f32,
+    color: Rgb<f32>,
 }
 
 impl Stone {
@@ -180,6 +194,7 @@ impl Stone {
         let x_offset = 0.0;
         let y_offset = 0.0;
         let rotation = 0.0;
+        let color = Rgb::new(0.0, 0.0, 0.0);
 
         Stone {
             x,
@@ -187,20 +202,13 @@ impl Stone {
             x_offset,
             y_offset,
             rotation,
+            color,
         }
     }
 }
 
 fn gen_random_seed() -> u64 {
     random_range(0, 1_000_000)
-}
-
-fn gen_random_color() -> Rgb {
-    let r = random_range(0, 255) as f32 / 255.0;
-    let g = random_range(0, 255) as f32 / 255.0;
-    let b = random_range(0, 255) as f32 / 255.0;
-
-    Rgb::new(r, g, b)
 }
 
 /* -------------------------------------------
@@ -233,6 +241,12 @@ fn update_controls_ui(app: &App, model: &mut Model, update: Update) {
                 ui.label("Rotation");
 
                 ui.add(Slider::new(&mut model.rotation, (0.0)..=(5.0)));
+            });
+
+            ui.horizontal(|ui| {
+                ui.label("Color");
+
+                ui.add(Slider::new(&mut model.color, (0.0)..=(5.0)));
             });
 
             ui.horizontal(|ui| {
