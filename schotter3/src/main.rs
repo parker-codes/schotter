@@ -133,8 +133,14 @@ fn key_pressed(app: &App, model: &mut Model, key: Key) {
         Key::S => {
             if let Some(window) = app.window(model.main_window) {
                 let app_name = app.exe_name().unwrap().to_string();
-                let random_id = random_range(0, 1_000_000);
-                let image_path = format!("snapshots/{app_name}-{random_id}.png");
+                let Model {
+                    random_seed,
+                    displacement,
+                    rotation,
+                    ..
+                } = model;
+                let image_path =
+                    format!("snapshots/{app_name}-s{random_seed}-d{displacement}-r{rotation}.png");
                 window.capture_frame(image_path);
             }
         }
