@@ -41,7 +41,7 @@ fn model(app: &App) -> Model {
         .build()
         .unwrap();
 
-    let random_seed = random_range(0, 1_000_000);
+    let random_seed = gen_random_seed();
     let displacement = 1.0;
     let rotation = 1.0;
     let color = Rgb::new(0.0, 0.0, 0.0);
@@ -128,7 +128,7 @@ fn update(app: &App, model: &mut Model, update: Update) {
 fn key_pressed(app: &App, model: &mut Model, key: Key) {
     match key {
         Key::R => {
-            model.random_seed = random_range(0, 1_000_000);
+            model.random_seed = gen_random_seed();
         }
         Key::S => {
             if let Some(window) = app.window(model.main_window) {
@@ -145,7 +145,7 @@ fn key_pressed(app: &App, model: &mut Model, key: Key) {
             }
         }
         Key::C => {
-            model.color = random_color();
+            model.color = gen_random_color();
         }
         Key::Up => {
             model.displacement += 0.1;
@@ -191,7 +191,11 @@ impl Stone {
     }
 }
 
-fn random_color() -> Rgb {
+fn gen_random_seed() -> u64 {
+    random_range(0, 1_000_000)
+}
+
+fn gen_random_color() -> Rgb {
     let r = random_range(0, 255) as f32 / 255.0;
     let g = random_range(0, 255) as f32 / 255.0;
     let b = random_range(0, 255) as f32 / 255.0;
@@ -238,7 +242,7 @@ fn update_controls_ui(app: &App, model: &mut Model, update: Update) {
                 }
 
                 if ui.button("Randomize").clicked() {
-                    model.random_seed = random_range(0, 1_000_000);
+                    model.random_seed = gen_random_seed();
                 }
             });
         });
