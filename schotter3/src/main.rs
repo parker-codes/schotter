@@ -213,17 +213,9 @@ fn update_controls_ui(app: &App, model: &mut Model, update: Update) {
 
     ui.do_frame_with_epi_frame(proxy, |ctx, _frame| {
         Area::new("controls").show(&ctx, |ui| {
-            ui.add(
-                Slider::new(&mut model.displacement, (0.0)..=(5.0))
-                    .smart_aim(true)
-                    .text("Displacement"),
-            );
+            ui.add(Slider::new(&mut model.displacement, (0.0)..=(5.0)).text("Displacement"));
 
-            ui.add(
-                Slider::new(&mut model.rotation, (0.0)..=(5.0))
-                    .smart_aim(true)
-                    .text("Rotation"),
-            );
+            ui.add(Slider::new(&mut model.rotation, (0.0)..=(5.0)).text("Rotation"));
 
             ui.horizontal(|ui| {
                 ui.label("Seed");
@@ -235,9 +227,8 @@ fn update_controls_ui(app: &App, model: &mut Model, update: Update) {
                         .cursor_at_end(true),
                 );
                 if seed_string_input.changed() {
-                    if let Ok(seed) = seed_string.parse::<u64>() {
-                        model.random_seed = seed;
-                    }
+                    let seed = seed_string.parse::<u64>().unwrap_or(0);
+                    model.random_seed = seed;
                 }
 
                 if ui.button("Randomize").clicked() {
