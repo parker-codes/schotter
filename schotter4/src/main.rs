@@ -125,34 +125,12 @@ fn update(app: &App, model: &mut Model, update: Update) {
     for stone in &mut model.gravel {
         if stone.cycles == 0 {
             if random_f32() > model.motion {
-                stone.x_velocity = 0.0;
-                stone.y_velocity = 0.0;
-                stone.rotation_velocity = 0.0;
-                stone.cycles = random_range(50, 300);
+                stone.pause();
             } else {
-                let factor = stone.y / ROWS as f32;
-                let displacement_factor = factor * model.displacement;
-                let rotation_factor = factor * model.rotation;
-
-                let new_x = displacement_factor * random_range(-0.5, 0.5);
-                let new_y = displacement_factor * random_range(-0.5, 0.5);
-                let new_rotation = rotation_factor * random_range(-PI / 4.0, PI / 4.0);
-                let new_cycles = random_range(50, 300);
-
-                stone.x_velocity = (new_x - stone.x_offset) / new_cycles as f32;
-                stone.y_velocity = (new_y - stone.y_offset) / new_cycles as f32;
-                stone.rotation_velocity = (new_rotation - stone.rotation) / new_cycles as f32;
-                stone.cycles = new_cycles;
-
-                // stone.start_cycles();
+                stone.start_cycles(model.displacement, model.rotation);
             }
         } else {
-            stone.x_offset += stone.x_velocity;
-            stone.y_offset += stone.y_velocity;
-            stone.rotation += stone.rotation_velocity;
-            stone.cycles -= 1;
-
-            // stone.run_cycle();
+            stone.run_cycle();
         }
     }
 
@@ -264,6 +242,36 @@ impl Stone {
             cycles,
             color,
         }
+    }
+
+    fn start_cycles(&mut self, displacement: f32, rotation: f32) {
+        let factor = self.y / ROWS as f32;
+        let displacement_factor = factor * displacement;
+        let rotation_factor = factor * rotation;
+
+        let new_x = displacement_factor * random_range(-0.5, 0.5);
+        let new_y = displacement_factor * random_range(-0.5, 0.5);
+        let new_rotation = rotation_factor * random_range(-PI / 4.0, PI / 4.0);
+        let new_cycles = random_range(50, 300);
+
+        self.x_velocity = (new_x - self.x_offset) / new_cycles as f32;
+        self.y_velocity = (new_y - self.y_offset) / new_cycles as f32;
+        self.rotation_velocity = (new_rotation - self.rotation) / new_cycles as f32;
+        self.cycles = new_cycles;
+    }
+
+    fn run_cycle(&mut self) {
+        self.x_offset += self.x_velocity;
+        self.y_offset += self.y_velocity;
+        self.rotation += self.rotation_velocity;
+        self.cycles -= 1;
+    }
+
+    fn pause(&mut self) {
+        self.x_velocity = 0.0;
+        self.y_velocity = 0.0;
+        self.rotation_velocity = 0.0;
+        self.cycles = random_range(50, 300);
     }
 }
 
