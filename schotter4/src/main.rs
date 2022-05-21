@@ -31,7 +31,7 @@ struct Model {
     controls_ui: Egui,
 
     // for recording
-    frames_dir: String,
+    current_recording_name: String,
     current_frame: u32,
     recording: bool,
 }
@@ -70,8 +70,7 @@ fn model(app: &App) -> Model {
     let controls_window = app.window(controls_window_id).unwrap();
     let controls_ui = Egui::from_window(&controls_window);
 
-    let app_name = app.exe_name().unwrap();
-    let frames_dir = format!("{ASSETS_DIR}/recordings/{app_name}_frames");
+    let current_recording_name = String::new();
     let current_frame = 0;
     let recording = false;
 
@@ -84,7 +83,7 @@ fn model(app: &App) -> Model {
 
         controls_ui,
 
-        frames_dir,
+        current_recording_name,
         current_frame,
         recording,
     }
@@ -167,8 +166,8 @@ fn update(app: &App, model: &mut Model, update: Update) {
         } else {
             if let Some(main_window) = app.window(model.main_window) {
                 let filename = format!(
-                    "{}/schotter{:>04}.png",
-                    model.frames_dir, model.current_frame
+                    "{ASSETS_DIR}/recordings/{}/{:>04}.png",
+                    model.current_recording_name, model.current_frame
                 );
 
                 main_window.capture_frame(filename);
@@ -196,11 +195,15 @@ fn key_pressed(app: &App, model: &mut Model, key: Key) {
             if model.recording {
                 model.recording = false;
             } else {
-                fs::create_dir_all(&model.frames_dir).unwrap_or_else(|error| {
+                model.current_recording_name = app.time.to_string();
+
+                let path = format!("{ASSETS_DIR}/recordings/{}", model.current_recording_name);
+                fs::create_dir_all(&path).unwrap_or_else(|error| {
                     if error.kind() != ErrorKind::AlreadyExists {
-                        panic! {"Problem creating directory {:?}", model.frames_dir};
+                        panic!("Problem creating directory {:?}", path);
                     }
                 });
+
                 model.current_frame = 0;
                 model.recording = true;
             }
